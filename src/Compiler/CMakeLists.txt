@@ -54,11 +54,13 @@ add_onnx_mlir_library(CompilerUtils
   MC
   )
 
+add_dependencies(CompilerUtils Accel)
+
 if( ACCELERATORS_TO_BUILD )
    foreach(t ${ACCELERATORS_TO_BUILD})
      message(STATUS "Targeting ${t}")
      if (${t}=="NNPA")
-       add_dependencies(CompilerUtils NNPAAccel)
+     add_dependencies(CompilerUtils NNPAAccel)
      endif ()
      endforeach(t)
  endif( ACCELERATORS_TO_BUILD )
