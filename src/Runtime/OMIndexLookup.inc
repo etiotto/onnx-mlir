@@ -12,10 +12,16 @@
 //
 //===----------------------------------------------------------------------===//
 
+#ifdef __cplusplus
+#include <cassert>
+#include <cstdint>
+#include <string>
+#else
 #include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#endif
 
 // Perform a 32-bit FNV (Fowler-Noll-Vo) hash on the given string.
 static inline uint32_t hash_string(uint32_t hval, const char *str) {
@@ -35,6 +41,8 @@ static inline uint32_t hash_string(uint32_t hval, const char *str) {
 static inline uint32_t hash_int64(uint32_t hval, int64_t val) {
   char str[20];
   sprintf(str, "%lld", (long long)val);
+  fprintf(stderr, "str: %s\n", str);
+
   return hash_string(hval, str);
 }
 
@@ -49,8 +57,12 @@ extern "C"
     find_index_str(
         const char *str, int32_t G[], int32_t V[], int32_t dictSize) {
   assert(str && G && V && dictSize > 0);
+  fprintf(stderr, "%s (%p)", str, &str);
+
   int32_t d = G[hash_string(0, str) % dictSize];
   int64_t index = (d < 0) ? V[-d - 1] : V[hash_string(d, str) % dictSize];
+
+  fprintf(stderr, "index = %lld\n", index);
   assert(index >= 0 && index < dictSize);
   return index;
 }
@@ -63,10 +75,16 @@ extern "C"
 extern "C"
 #endif
     uint64_t
-    find_index_i64(int64_t val, int32_t G[], int32_t V[], int32_t dictSize) {
+    find_index_i64(const int64_t *val, const int32_t G[], const int32_t V[],
+        int32_t dictSize) {
   assert(G && V && dictSize > 0);
-  int32_t d = G[hash_int64(0, val) % dictSize];
-  int64_t index = (d < 0) ? V[-d - 1] : V[hash_int64(d, val) % dictSize];
+
+  fprintf(stderr, "val: %lld (%p)\n", *val, val);
+
+  int32_t d = G[hash_int64(0, *val) % dictSize];
+  int64_t index = (d < 0) ? V[-d - 1] : V[hash_int64(d, *val) % dictSize];
+  fprintf(stderr, "val: %lld, index = %lld\n", *val, index);
+
   assert(index >= 0 && index < dictSize);
   return index;
 }

@@ -328,18 +328,101 @@ void omTensorSetOwning(OMTensor *tensor, int64_t owning) {
   tensor->_owning = owning;
 }
 
-/**
- * OMTensor allocated ptr getter.
- * Note that this function is intentionally left out from the header
- * because it is only used by the wrapper code we emit around inference
- * function that converts OMTensor into MemRefs for user convenience.
- *
- * @param tensor pointer to the OMTensor
- * @return pointer to the allocated data buffer of the OMTensor,
- *         NULL if the allocated data buffer is not set.
- */
-void *omTensorGetAllocatedPtr(const OMTensor *tensor) {
-  return tensor->_allocatedPtr;
+void omTensorPrint(const OMTensor *omt) {
+  OM_DATA_TYPE dataType = omTensorGetDataType(omt);
+  int64_t rank = omTensorGetRank(omt);
+
+  printf("*** OMTensor ***\n");
+  printf("\trank = %lld\n", rank);
+
+  printf("\tdataType = ");
+  switch (dataType) {
+  case ONNX_TYPE_BOOL:
+    printf("bool\n");
+    break;
+  case ONNX_TYPE_INT8:
+    printf("signed char\n");
+    break;
+  case ONNX_TYPE_UINT8:
+    printf("unsigned char\n");
+    break;
+  case ONNX_TYPE_INT16:
+    printf("int16_t\n");
+    break;
+  case ONNX_TYPE_UINT16:
+    printf("uint16_t\n");
+    break;
+  case ONNX_TYPE_INT32:
+    printf("int32_t\n");
+    break;
+  case ONNX_TYPE_UINT32:
+    printf("uint32_t\n");
+    break;
+  case ONNX_TYPE_INT64:
+    printf("int64_t\n");
+    break;
+  case ONNX_TYPE_UINT64:
+    printf("uint64_t\n");
+    break;
+  case ONNX_TYPE_BFLOAT16:
+    printf("bfloat16\n");
+    break;
+  case ONNX_TYPE_FLOAT16:
+    printf("float16\n");
+    break;
+  case ONNX_TYPE_FLOAT:
+    printf("float\n");
+    break;
+  case ONNX_TYPE_DOUBLE:
+    printf("double\n");
+    break;
+  case ONNX_TYPE_STRING:
+    printf("const char *\n");
+    break;
+  case ONNX_TYPE_COMPLEX64:
+    printf("complex64\n");
+    break;
+  case ONNX_TYPE_COMPLEX128:
+    printf("complex128\n");
+    break;
+  case ONNX_TYPE_UNDEFINED:
+    printf("undefined\n");
+    break;
+  }
+
+#if 1
+  int64_t *shape = omTensorGetShape(omt);
+  printf("\tdata: (");
+  for (int64_t r = rank - 1; r >= 0; --r) {
+    int64_t index = 0;
+    for (int64_t i = 0; i < shape[r]; ++i) {
+      index *= i;
+      if (i)
+        printf(", ");
+      if (r)
+        printf("[");
+      else {
+        if (dataType == ONNX_TYPE_STRING || dataType == ONNX_TYPE_INT8) {
+          const char **dataPtr = (const char **)omTensorGetDataPtr(omt);
+          printf("%s (%p)", dataPtr[i], &dataPtr[i]);
+        } else if (dataType == ONNX_TYPE_INT64) {
+          int64_t *dataPtr = (int64_t *)omTensorGetDataPtr(omt);
+          printf("%lld (%p)", dataPtr[i], &dataPtr[i]);
+        } else
+          assert(false);
+      }
+      if (r)
+        printf("]");
+    }
+  }
+  printf(")\n");
+#endif
+
+  int64_t *strides = omTensorGetStrides(omt);
+  printf("\tstrides: ");
+  for (int64_t i = 0; i < rank; i++)
+    printf("%lld", strides[i]);
+  printf("\n");
 }
 
 #ifdef __cplusplus
@@ -494,8 +577,8 @@ inline bool omTensorAreTwoOmtsClose(
       eqAllclose.begin(), eqAllclose.end(), [&](T eq) { return eq >= 0; });
 
   if (!satisfied) {
-    // Figure out where and what went wrong, this can be slow; but hopefully we
-    // don't need this often.
+    // Figure out where and what went wrong, this can be slow; but hopefully
+    // we don't need this often.
     for (const auto &idx : omTensorComputeIndexSet(a)) {
       T aElem = omTensorGetElem<T>(a, idx);
       T bElem = omTensorGetElem<T>(b, idx);
@@ -513,6 +596,20 @@ inline bool omTensorAreTwoOmtsClose(
   omTensorDestroy(rtolT);
   omTensorDestroy(atolT);
   return satisfied;
+}
+
+/**
+ * OMTensor allocated ptr getter.
+ * Note that this function is intentionally left out from the header
+ * because it is only used by the wrapper code we emit around inference
+ * function that converts OMTensor into MemRefs for user convenience.
+ *
+ * @param tensor pointer to the OMTensor
+ * @return pointer to the allocated data buffer of the OMTensor,
+ *         NULL if the allocated data buffer is not set.
+ */
+void *omTensorGetAllocatedPtr(const OMTensor *tensor) {
+  return tensor->_allocatedPtr;
 }
 
 // Explicit instantiation of all templated API functions.
@@ -559,4 +656,5 @@ template bool omTensorAreTwoOmtsClose<float>(
     OMTensor *a, OMTensor *b, float rtol, float atol);
 template bool omTensorAreTwoOmtsClose<double>(
     OMTensor *a, OMTensor *b, float rtol, float atol);
-#endif
+
+#endif // __cplusplus

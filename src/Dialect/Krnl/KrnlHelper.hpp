@@ -367,6 +367,7 @@ struct KrnlBuilder : public DialectBuilder {
 
   // Onnx-mlir runtime functions.
   Value findIndex(Value input, Value G, Value V, Value len) const;
+  void printTensor(Value input) const;
 };
 
 // Recursive class specialized for KrnlBuilder refereed to as krnl.

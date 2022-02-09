@@ -28,6 +28,11 @@
 
 using namespace std;
 using namespace mlir;
+<<<<<<< HEAD
+=======
+using OMTensorUniquePtr = unique_ptr<OMTensor, decltype(&omTensorDestroy)>;
+
+>>>>>>> 1852991 (Extend CategoryMapper testing)
 namespace BackendCppTests {
 
 // Helper class containing useful functions for creating, compiling and running
@@ -64,9 +69,20 @@ public:
   // Run the model and verify the result(s). The \p verifyFunction parameter
   // is used to pass in the function object used to verify the correctness of
   // the test result.
+<<<<<<< HEAD
+<<<<<<< HEAD
   bool runAndVerifyTest(std::vector<onnx_mlir::OMTensorUniquePtr> &inputs,
       std::vector<onnx_mlir::OMTensorUniquePtr> &expectedOutputs,
       std::function<bool(OMTensor *, OMTensor *)> verifyFunction);
+=======
+  bool runAndVerifyTest(std::vector<OMTensorPtr> &inputs,
+      std::vector<OMTensorPtr> &expectedOutputs,
+=======
+  bool runAndVerifyTest(std::vector<OMTensorUniquePtr> &inputs,
+      std::vector<OMTensorUniquePtr> &expectedOutputs,
+>>>>>>> 1852991 (Extend CategoryMapper testing)
+      std::function<bool(const OMTensor *, const OMTensor *)> verifyFunction);
+>>>>>>> 1e7da33 (Generalize CategoryMapper test.)
 
   void reset();
 

@@ -541,6 +541,10 @@ Value KrnlBuilder::findIndex(Value input, Value G, Value V, Value len) const {
   return b.create<KrnlFindIndexOp>(loc, b.getIndexType(), input, G, V, len);
 }
 
+void KrnlBuilder::printTensor(Value input) const {
+  b.create<KrnlPrintTensorOp>(loc, input);
+}
+
 bool isKrnlGlobalConstant(Value result) {
   Operation *op = result.getDefiningOp();
 

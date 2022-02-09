@@ -55,6 +55,9 @@ const std::map<std::string, OM_DATA_TYPE> OM_DATA_TYPE_CPP_TO_ONNX = {
     {"m", ONNX_TYPE_UINT64}, // uint64_t -> UINT64, unsigned long  -> UINT64
     {"f", ONNX_TYPE_FLOAT},  // float    -> FLOAT
     {"d", ONNX_TYPE_DOUBLE}, // double   -> DOUBLE
+    {"PKc", ONNX_TYPE_STRING},    // const char * -> STRING
+    {"Cf", ONNX_TYPE_COMPLEX64},  // _Complex float -> COMPLEX64
+    {"Cd", ONNX_TYPE_COMPLEX128}, // _Complex double -> COMPLEX128
 };
 #endif //__cplusplus
 

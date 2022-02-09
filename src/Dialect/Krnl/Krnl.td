@@ -1036,3 +1036,12 @@ def KrnlFindIndexOp : Op<Krnl_Dialect, "find_index",
   let arguments = (ins AnyTypeOf<[StringType, I64]>:$input, I32MemRef:$G, I32MemRef:$V, I32:$len);
   let results = (outs Index:$index);
 }
+
+def KrnlPrintTensorOp : Op<Krnl_Dialect, "print_tensor", [MemRefsNormalizable]> {
+  let summary = "Print a tensor.";
+  let description = [{
+    This operation can be used to generate a call to a runtime function which prints a tensor.
+  }];
+
+  let arguments = (ins AnyMemRef:$input);
+}

@@ -283,6 +283,11 @@ int64_t omTensorGetOwning(const OMTensor *tensor);
  */
 void omTensorSetOwning(OMTensor *tensor, int64_t owning);
 
+/**
+ * \brief Print a OMTensor
+ */
+void omTensorPrint(const OMTensor *tensor);
+
 #ifdef __cplusplus
 }
 #endif

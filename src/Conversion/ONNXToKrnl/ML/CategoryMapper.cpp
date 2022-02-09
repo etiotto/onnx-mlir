@@ -122,22 +122,33 @@ struct ONNXCategoryMapperOpLowering : public ConversionPattern {
     ValueRange loopDef = create.krnl.defineLoops(rank);
     create.krnl.iterateIE(loopDef, loopDef, lbs, ubs,
         [&](KrnlBuilder &createKrnl, ValueRange loopInd) {
-          // Determine the index of 'inputElem' in the perfect hash table
-          // 'pHash'. Note: the index might not be valid (this happens
-          // when the 'inputElem' is not present in the perfect hash
-          // table).
+    // Determine the index of 'inputElem' in the perfect hash table
+    // 'pHash'. Note: the index might not be valid (this happens
+    // when the 'inputElem' is not present in the perfect hash
+    // table).
+#if 1
+          { createKrnl.printTensor(X); }
+#endif
           Value inputElem = createKrnl.load(X, loopInd);
           Value index, isIndexValid;
           std::tie(index, isIndexValid) =
               emitFindIndex(inputElem, elementType, perfectHashTable,
                   constantForCatsInt64s, constantForCatsStrings, create);
 
+#if 1
           // Store the final result.
           scf::IfOp ifOp = rewriter.create<scf::IfOp>(
               loc, isIndexValid, /*withElseRegion=*/true);
           storeResult(index, elementType, ifOp, constantForCatsInt64s,
               constantForCatsStrings, defaultInt64, defaultString, alloc,
               loopInd, createKrnl, rewriter);
+#else
+
+    auto cast = rewriter.create<arith::IndexCastOp>(
+        loc, index, rewriter.getIntegerType(64));
+
+          createKrnl.store(cast , alloc, loopInd);
+#endif
         });
 
     rewriter.replaceOp(op, alloc);
@@ -145,7 +156,7 @@ struct ONNXCategoryMapperOpLowering : public ConversionPattern {
     LLVM_DEBUG({
       FuncOp function = getContainingFunction(op);
       assert(function && "Could not find parent function");
-      dbgs() << "function: " << function << "\n";
+      dbgs() << "function:\n" << function << "\n";
     });
 
     return success();
@@ -239,9 +250,10 @@ private:
           res = std::make_tuple(index, isIndexValid);
         })
         .Case<StringType>([&](StringType type) {
-          // Determine whether the index returned is valid.
-          // The index is valid if 'inputElem' compares equal to the string in
-          // 'constantForCatsStrings'.
+// Determine whether the index returned is valid.
+// The index is valid if 'inputElem' compares equal to the string in
+// 'constantForCatsStrings'.
+#if 1
           Value compareVal = create.krnl.load(constantForCatsStrings, {index});
           Value strlenRes = create.krnl.strlen(compareVal);
           Value strncmpRes =
@@ -249,6 +261,9 @@ private:
           Value zeroVal = create.math.constant(builder.getIntegerType(32), 0);
           Value isIndexValid = create.math.eq(strncmpRes, zeroVal);
           res = std::make_tuple(index, isIndexValid);
+#else
+          res = std::make_tuple(index, index);
+#endif
         })
         .Default([&](Type type) { llvm_unreachable("Illegal KeyTy"); });
 
