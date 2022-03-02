@@ -1029,8 +1029,9 @@ void emitOutput(mlir::OwningOpRef<ModuleOp> &module, mlir::MLIRContext &context,
     emitOutputFiles(outputBaseName, emissionTarget, context, module);
 }
 
-int compileModule(mlir::OwningModuleRef &module, mlir::MLIRContext &context,
-    std::string outputBaseName, EmissionTargetType emissionTarget) {
+int compileModule(mlir::OwningOpRef<ModuleOp> &module,
+    mlir::MLIRContext &context, std::string outputBaseName,
+    EmissionTargetType emissionTarget) {
   setupModule(module, context, outputBaseName);
 
   mlir::PassManager pm(&context, mlir::OpPassManager::Nesting::Implicit);
